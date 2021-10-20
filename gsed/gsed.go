@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package ggrep provides functionality for replace (regenerate) generated code.
-package ggrep
+// Package gsed provides functionality for replace (regenerate) generated code.
+package gsed
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ import (
 	"regexp"
 
 	"github.com/goccy/go-yaml"
-	"github.com/goregrep/goregrep/regenerate"
+	"github.com/goresed/goresed/regenerate"
 	"golang.org/x/tools/imports"
 )
 
