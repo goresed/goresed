@@ -1,8 +1,8 @@
-// Copyright 2021 The Go Authors. All rights reserved.
+// Copyright 2022 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package gsed provides functionality for replace (regenerate) generated code.
+// Package gsed provides functionality for search and replace.
 package gsed
 
 import (
@@ -25,8 +25,8 @@ func New(yml io.Reader, opts ...Option) error {
 
 	var yamlOptions []yaml.DecodeOption
 
-	if len(cfg.references) != 0 {
-		yamlOptions = append(yamlOptions, yaml.ReferenceReaders(cfg.references...))
+	if len(cfg.yamlReferences) != 0 {
+		yamlOptions = append(yamlOptions, yaml.ReferenceReaders(cfg.yamlReferences...))
 	}
 
 	dec := yaml.NewDecoder(yml, yamlOptions...)
@@ -70,10 +70,10 @@ func New(yml io.Reader, opts ...Option) error {
 }
 
 type Configuration struct {
-	Regenerates []Regenerate `yaml:"regenerates"`
-	directory   string
-	references  []io.Reader
-	gofmt       *imports.Options
+	Regenerates    []Regenerate `yaml:"regenerates"`
+	directory      string
+	yamlReferences []io.Reader
+	gofmt          *imports.Options
 }
 
 type Regenerate struct {
@@ -106,10 +106,10 @@ func WithDirectory(dir string) Option {
 	}
 }
 
-// WithReferences setes reference to anchor defined by passed readers.
-func WithReferences(refs ...io.Reader) Option {
+// WithYAMLReferences setes reference to anchor defined by passed readers.
+func WithYAMLReferences(refs ...io.Reader) Option {
 	return func(c *Configuration) {
-		c.references = append(c.references, refs...)
+		c.yamlReferences = append(c.yamlReferences, refs...)
 	}
 }
 

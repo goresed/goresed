@@ -1,11 +1,12 @@
-// Copyright 2021 The Go Authors. All rights reserved.
+// Copyright 2022 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
 package regenerate_test
 
 import (
-	"io/ioutil"
+	"io"
+	"os"
 	"regexp"
 	"strings"
 	"testing"
@@ -111,9 +112,9 @@ type Queries struct {
 
 			r := strings.NewReader(tt.input)
 
-			w, err := ioutil.TempFile("", "")
+			w, err := os.CreateTemp("", "")
 			if err != nil {
-				t.Fatalf("ioutil temp file: %s", err)
+				t.Fatalf("create temp os file: %s", err)
 			}
 			defer w.Close()
 
@@ -124,9 +125,9 @@ type Queries struct {
 
 			want := strings.TrimSpace(tt.want)
 
-			s, err := ioutil.ReadAll(w)
+			s, err := io.ReadAll(w)
 			if err != nil {
-				t.Fatalf("io util read all: %s", err)
+				t.Fatalf("io read all: %s", err)
 			}
 
 			get := strings.TrimSpace(string(s))

@@ -1,4 +1,4 @@
-// Copyright 2021 The Go Authors. All rights reserved.
+// Copyright 2022 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -7,7 +7,6 @@ package gsed_test
 import (
 	_ "embed"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -139,18 +138,18 @@ func (q *Queries) CountFoos(ctx context.Context) (int64, error) {
 		},
 	}
 
-	direcotry, err := ioutil.TempDir("", "test_goresed")
+	directory, err := os.MkdirTemp("", "test_goresed")
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(direcotry)
+	defer os.RemoveAll(directory)
 
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name+"/"+tt.line, func(t *testing.T) {
 			t.Parallel()
 
-			dir := filepath.Join(direcotry, strings.Split(tt.line, ":")[1])
+			dir := filepath.Join(directory, strings.Split(tt.line, ":")[1])
 
 			for pth, file := range tt.inputFiles {
 				err := os.MkdirAll(filepath.Dir(filepath.Join(dir, pth)), os.ModePerm)
@@ -183,7 +182,7 @@ func (q *Queries) CountFoos(ctx context.Context) (int64, error) {
 
 			var opts []gsed.Option
 
-			opts = append(opts, gsed.WithReferences(refs...))
+			opts = append(opts, gsed.WithYAMLReferences(refs...))
 			opts = append(opts, gsed.WithDirectory(dir))
 
 			gofmt := imports.Options{
@@ -229,7 +228,7 @@ func (q *Queries) CountFoos(ctx context.Context) (int64, error) {
 
 		filesLoop:
 			for _, f := range files {
-				get, err := ioutil.ReadAll(f)
+				get, err := io.ReadAll(f)
 				if err != nil {
 					t.Fatal(err)
 				}

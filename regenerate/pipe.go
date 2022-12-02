@@ -1,4 +1,4 @@
-// Copyright 2021 The Go Authors. All rights reserved.
+// Copyright 2022 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -9,7 +9,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"regexp"
 
 	"golang.org/x/tools/imports"
@@ -22,7 +21,7 @@ func Pipe(in io.Reader, out file, opts ...Option) error {
 		opt(&cfg)
 	}
 
-	b, err := ioutil.ReadAll(in)
+	b, err := io.ReadAll(in)
 	if err != nil {
 		return fmt.Errorf("io util read all: %w", err)
 	}

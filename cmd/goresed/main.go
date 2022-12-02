@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -13,8 +14,21 @@ func main() {
 	cmd := kong.Parse(&CLI)
 
 	switch cmd.Command() {
-	case "regenerate":
-		err := sed(CLI.Regenerate.File, CLI.Regenerate.References)
+	case "replace":
+		if err := sed(CLI.Replace.Configurations); err != nil {
+			fmt.Fprintf(os.Stderr, "%s\n", err)
+			os.Exit(1)
+		}
+
+	case "go":
+		err := sed(CLI.Go.Configurations,
+			gsed.WithGofmt(&imports.Options{
+				Fragment:  true,
+				Comments:  true,
+				TabIndent: true,
+				TabWidth:  8,
+			}),
+		)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", err)
 			os.Exit(1)
@@ -27,44 +41,45 @@ func main() {
 }
 
 var CLI struct {
-	Regenerate struct {
-		File       string   `default:"goresed.yaml" help:"Specify an alternate YAML file."`
-		References []string `help:"Specify YAML references."`
-	} `cmd:"" help:"Replace generated code."`
+	Replace SearchAndReplace `cmd:"" help:"Search and replace."`
+	Go      SearchAndReplace `cmd:"" help:"Search and replace in Go source code."`
 }
 
-func sed(pth string, refs []string) error {
-	yml, err := os.Open(pth)
+type SearchAndReplace struct {
+	Configurations []string `name:"config" help:"Path to configuration."`
+}
+
+func sed(configs []string, opts ...gsed.Option) error {
+	if len(configs) == 0 {
+		return errors.New("missing config")
+	}
+
+	if configs[0] == "" {
+		return errors.New("empty config")
+	}
+
+	yml, err := os.Open(configs[0])
 	if err != nil {
 		return err
 	}
 
-	var opts []gsed.Option
+	if len(configs) > 1 {
+		for _, pth := range configs[1:] {
+			yml, err := os.Open(pth)
+			if err != nil {
+				return err
+			}
 
-	for _, pth := range refs {
-		yml, err := os.Open(pth)
-		if err != nil {
-			return err
+			opts = append(opts, gsed.WithYAMLReferences(yml))
 		}
-
-		opts = append(opts, gsed.WithReferences(yml))
 	}
 
 	dir, err := os.Getwd()
 	if err != nil {
-		return fmt.Errorf("os: get current/working directory: %w", err)
+		return fmt.Errorf("get current/working os directory: %w", err)
 	}
 
 	opts = append(opts, gsed.WithDirectory(dir))
-
-	gofmt := imports.Options{
-		Fragment:  true,
-		Comments:  true,
-		TabIndent: true,
-		TabWidth:  8,
-	}
-
-	opts = append(opts, gsed.WithGofmt(&gofmt))
 
 	err = gsed.New(yml, opts...)
 	if err != nil {

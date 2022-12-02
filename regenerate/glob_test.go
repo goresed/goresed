@@ -1,11 +1,11 @@
-// Copyright 2021 The Go Authors. All rights reserved.
+// Copyright 2022 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
 package regenerate_test
 
 import (
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -265,7 +265,7 @@ func (q *Queries) CountBars(ctx context.Context) (int64, error) {
 		},
 	}
 
-	direcotry, err := ioutil.TempDir("", "test_goresed")
+	direcotry, err := os.MkdirTemp("", "test_goresed")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -349,7 +349,7 @@ func (q *Queries) CountBars(ctx context.Context) (int64, error) {
 
 		filesLoop:
 			for _, f := range files {
-				get, err := ioutil.ReadAll(f)
+				get, err := io.ReadAll(f)
 				if err != nil {
 					t.Fatal(err)
 				}
